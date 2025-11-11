@@ -36,6 +36,32 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(str(error.exception), f"'{path[-1]}'")
 
 
+class TestMemoize(unittest.TestCase):
+    """Tests for memoize decorator"""
+
+    def test_memoize(self):
+        """Test that memoize caches method results and avoids repeated calls"""
+
+        class TestClass:
+            def a_method(self):
+                return 42
+
+            @memoize
+            def a_property(self):
+                return self.a_method()
+
+        with patch.object(TestClass, "a_method", return_value=42) as mock_method:
+            obj = TestClass()
+
+            first = obj.a_property
+            second = obj.a_property
+
+            self.assertEqual(first, 42)
+            self.assertEqual(second, 42)
+            mock_method.assert_called_once()
+
+
+
 class TestGetJson(unittest.TestCase):
     """Tests for get_json function"""
 
