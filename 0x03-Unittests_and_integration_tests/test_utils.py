@@ -34,3 +34,27 @@ class TestAccessNestedMap(unittest.TestCase):
 
         # Confirm that the message matches the missing key
         self.assertEqual(str(error.exception), f"'{path[-1]}'")
+
+
+class TestGetJson(unittest.TestCase):
+    """Tests for get_json function"""
+
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
+    ])
+    def test_get_json(self, test_url, test_payload):
+        """Test that get_json returns expected JSON response"""
+        # Patch requests.get so no actual HTTP request happens
+        with patch("utils.requests.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = test_payload
+            mock_get.return_value = mock_response
+
+            result = get_json(test_url)
+
+            # Ensure requests.get was called once with test_url
+            mock_get.assert_called_once_with(test_url)
+
+            # Ensure the returned JSON matches test_payload
+            self.assertEqual(result, test_payload)
