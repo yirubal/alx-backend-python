@@ -19,6 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/chats/', include('chats.urls')),  # add this
+    path('api/', include('chats.urls')),  # include the router
 
 ]

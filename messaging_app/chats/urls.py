@@ -1,6 +1,12 @@
-from django.urls import path
-from chats import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from .views import ConversationViewSet, MessageViewSet
+
+router = DefaultRouter()
+router.register(r'conversations', ConversationViewSet, basename='conversations')
+router.register(r'messages', MessageViewSet, basename='messages')
 
 urlpatterns = [
-    path('', views.ping, name='chats-ping'),  # GET /api/v1/chats/
+    path('', include(router.urls)),
 ]
