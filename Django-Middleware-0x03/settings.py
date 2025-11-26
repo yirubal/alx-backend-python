@@ -94,10 +94,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 
+
     # 👉 Your custom middleware
     'chats.middleware.RequestLoggingMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',  # new
     'chats.middleware.OffensiveLanguageMiddleware',
+    'chats.middleware.RolepermissionMiddleware',
 
 ]
 

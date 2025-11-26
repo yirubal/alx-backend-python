@@ -93,3 +93,36 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get("REMOTE_ADDR")
         return ip
+
+
+
+class RolepermissionMiddleware:
+    """
+    Middleware to enforce role-based access control.
+    Only users with 'admin' or 'moderator' role can proceed.
+    """
+
+    # roles allowed to access protected routes
+    ALLOWED_ROLES = ["admin", "moderator"]
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Ensure the user is authenticated first
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return JsonResponse(
+                {"error": "Authentication required."}, status=401
+            )
+
+        # Check role for protected actions
+        if request.path.startswith("/api/protected/"):  # Adjust your endpoint
+            user_role = getattr(user, "role", None)  # assuming user model has 'role' field
+            if user_role not in self.ALLOWED_ROLES:
+                return JsonResponse(
+                    {"error": "Forbidden. Admin or moderator role required."}, status=403
+                )
+
+        response = self.get_response(request)
+        return response
