@@ -1,13 +1,5 @@
-import logging
+# chats/middleware.py
 from datetime import datetime
-
-# Configure logger to write into requests.log
-logger = logging.getLogger(__name__)
-file_handler = logging.FileHandler("requests.log")
-formatter = logging.Formatter('%(message)s')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-logger.setLevel(logging.INFO)
 
 
 class RequestLoggingMiddleware:
@@ -16,8 +8,11 @@ class RequestLoggingMiddleware:
 
     def __call__(self, request):
         user = request.user if request.user.is_authenticated else "Anonymous"
+        log_line = f"{datetime.now()} - User: {user} - Path: {request.path}\n"
 
-        logger.info(f"{datetime.now()} - User: {user} - Path: {request.path}")
+        # Append to requests.log
+        with open("requests.log", "a") as f:
+            f.write(log_line)
 
         response = self.get_response(request)
         return response
