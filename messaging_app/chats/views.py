@@ -1,8 +1,10 @@
 from rest_framework import viewsets, status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .models import Conversation, Message
+from .permissions import IsOwner
 from .serializers import ConversationSerializer, MessageSerializer
 
 
@@ -58,3 +60,12 @@ class MessageViewSet(viewsets.ModelViewSet):
         messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
         serializer = self.get_serializer(messages, many=True)
         return Response(serializer.data)
+
+
+
+class ConversationDetailView(RetrieveAPIView):
+    queryset = Conversation.objects.all()
+    serializer_class = ConversationSerializer
+    permission_classes = [IsOwner]
+    lookup_field = "id"  # optional if your URL uses <id>
+
