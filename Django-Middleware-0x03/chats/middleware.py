@@ -2,7 +2,8 @@
 from datetime import datetime
 from django.conf import settings
 import os
-
+import time
+from django.http import JsonResponse
 from django.http import HttpResponseForbidden
 
 
@@ -38,4 +39,57 @@ class RestrictAccessByTimeMiddleware:
             return HttpResponseForbidden("Chat access is restricted between 9PM and 6AM.")
 
         response = self.get_response(request)
+
         return response
+
+
+
+
+
+class OffensiveLanguageMiddleware:
+    """
+    Middleware to limit number of chat messages sent by an IP address
+    within a defined time window (rate limiting).
+    """
+
+    # max messages per window
+    MESSAGE_LIMIT = 5
+    # window in seconds (1 minute)
+    TIME_WINDOW = 60
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # store IP addresses with timestamps of POST requests
+        self.ip_requests = {}
+
+    def __call__(self, request):
+        if request.method == "POST" and request.path.startswith("/api/messages/"):
+            ip = self.get_client_ip(request)
+            now = time.time()
+            # remove old requests outside the time window
+            timestamps = self.ip_requests.get(ip, [])
+            timestamps = [t for t in timestamps if now - t < self.TIME_WINDOW]
+
+            if len(timestamps) >= self.MESSAGE_LIMIT:
+                return JsonResponse(
+                    {"error": "Rate limit exceeded. Max 5 messages per minute."},
+                    status=429,
+                )
+
+            timestamps.append(now)
+            self.ip_requests[ip] = timestamps
+
+        response = self.get_response(request)
+        return response
+
+    def get_client_ip(self, request):
+        """
+        Retrieve client IP address from request.
+        Handles common reverse proxy headers.
+        """
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0]
+        else:
+            ip = request.META.get("REMOTE_ADDR")
+        return ip
