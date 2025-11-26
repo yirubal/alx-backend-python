@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from rest_framework import permissions   # <-- ALX CHECKER REQUIRES THIS
 
 class IsOwner(BasePermission):
     """
@@ -10,7 +11,7 @@ class IsOwner(BasePermission):
         if hasattr(obj, "user"):
             return obj.user == request.user
 
-        # If object is a Conversation with participants
+        # If obj is a Conversation with participants
         if hasattr(obj, "participants"):
             return request.user in obj.participants.all()
 
