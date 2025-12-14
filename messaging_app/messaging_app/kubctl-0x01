@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+echo "📈 Scaling Django app to 3 replicas..."
+kubectl scale deployment django-messaging --replicas=3
+
+echo "⏳ Waiting for pods to be ready..."
+sleep 10
+
+echo "📦 Listing running pods..."
+kubectl get pods
+
+echo "🌐 Getting service URL..."
+SERVICE_URL=$(minikube service django-messaging-service --url)
+echo "Service URL: $SERVICE_URL"
+
+echo "🚀 Running load test using wrk (10 seconds)..."
+wrk -t2 -c20 -d10s $SERVICE_URL
+
+echo "📊 Monitoring resource usage..."
+kubectl top pods
