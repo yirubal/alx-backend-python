@@ -4,6 +4,11 @@ metadata:
   name: django-messaging-blue
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: django-messaging
@@ -16,6 +21,6 @@ spec:
     spec:
       containers:
         - name: django-messaging
-          image: django-messaging-app
+          image: django-messaging-app:2.0
           ports:
             - containerPort: 8000

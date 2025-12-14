@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+echo "🚀 Applying updated deployment (Rolling Update)..."
+kubectl apply -f blue_deployment.yaml
+
+echo "⏳ Monitoring rollout status..."
+kubectl rollout status deployment/django-messaging-blue
+
+echo "🌐 Testing application availability during update..."
+SERVICE_URL=$(minikube service django-messaging-service --url)
+
+for i in {1..10}
+do
+  curl -s $SERVICE_URL > /dev/null && echo "Request $i: OK"
+  sleep 1
+done
+
+echo "📦 Verifying running pods..."
+kubectl get pods -l app=django-messaging
+
+echo "✅ Rolling update completed successfully"
